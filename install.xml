@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<concrete5-cif version="1.0">
+    <singlepages>
+        <page name="Push Notifications" path="/dashboard/push_notifications"
+              filename="/dashboard/push_notifications.php" package="push_notifications"/>
+        <page name="Settings" path="/dashboard/push_notifications/settings"
+              filename="/dashboard/push_notifications/settings/settings.php"
+              package="push_notifications"/>
+        <page name="Send Message" path="/dashboard/push_notifications/send_message"
+              filename="/dashboard/push_notifications/send_message.php"
+              package="push_notifications"/>
+    </singlepages>
+</concrete5-cif>
