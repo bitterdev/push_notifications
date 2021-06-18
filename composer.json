@@ -1,4 +1,11 @@
 {
+  "name": "bitter/push_notifications",
+  "type": "concrete5-package",
+  "autoload": {
+    "psr-4": {
+      "Bitter\\PushNotifications\\": "src/Bitter/PushNotifications"
+    }
+  },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "2.1.3"
   },
