@@ -10,6 +10,7 @@
 
 namespace Bitter\PushNotifications;
 
+use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Package\Package;
 use Concrete\Core\Package\PackageService;
 use \Concrete\Core\Support\Facade\Application;
@@ -19,6 +20,8 @@ class Settings
     protected $app;
     /** @var Package */
     protected $pkg;
+    protected $config;
+
     private $apiKey = '';
     private $authDomain = '';
     private $databaseURL = '';
@@ -33,12 +36,13 @@ class Settings
     private $welcomeMessageIconFileId = 0;
 
     public function __construct(
-        PackageService $packageService
+        PackageService $packageService,
+        Repository $config
     )
     {
         $this->app = Application::getFacadeApplication();
         $this->pkg = $packageService->getByHandle("push_notifications")->getController();
-
+        $this->config = $config;
         $this->load();
     }
 
@@ -240,39 +244,35 @@ class Settings
      */
     public function save()
     {
-        $config = $this->pkg->getConfig();
-
-        $config->save("settings.api_key", $this->getApiKey());
-        $config->save("settings.auth_domain", $this->getAuthDomain());
-        $config->save("settings.database_url", $this->getDatabaseURL());
-        $config->save("settings.project_id", $this->getProjectId());
-        $config->save("settings.storage_bucket", $this->getStorageBucket());
-        $config->save("settings.messaging_sender_id", $this->getMessagingSenderId());
-        $config->save("settings.server_key", $this->getServerKey());
-        $config->save("settings.welcome_message_enabled", $this->getWelcomeMessageEnabled());
-        $config->save("settings.welcome_message_title", $this->getWelcomeMessageTitle());
-        $config->save("settings.welcome_message_body", $this->getWelcomeMessageBody());
-        $config->save("settings.welcome_message_click_action", $this->getWelcomeMessageClickAction());
-        $config->save("settings.welcome_message_icon_file_id", $this->getWelcomeMessageIconFileId());
+        $this->config->save("push_notifications.settings.api_key", $this->getApiKey());
+        $this->config->save("push_notifications.settings.auth_domain", $this->getAuthDomain());
+        $this->config->save("push_notifications.settings.database_url", $this->getDatabaseURL());
+        $this->config->save("push_notifications.settings.project_id", $this->getProjectId());
+        $this->config->save("push_notifications.settings.storage_bucket", $this->getStorageBucket());
+        $this->config->save("push_notifications.settings.messaging_sender_id", $this->getMessagingSenderId());
+        $this->config->save("push_notifications.settings.server_key", $this->getServerKey());
+        $this->config->save("push_notifications.settings.welcome_message_enabled", $this->getWelcomeMessageEnabled());
+        $this->config->save("push_notifications.settings.welcome_message_title", $this->getWelcomeMessageTitle());
+        $this->config->save("push_notifications.settings.welcome_message_body", $this->getWelcomeMessageBody());
+        $this->config->save("push_notifications.settings.welcome_message_click_action", $this->getWelcomeMessageClickAction());
+        $this->config->save("push_notifications.settings.welcome_message_icon_file_id", $this->getWelcomeMessageIconFileId());
 
         return $this;
     }
 
     public function load()
     {
-        $config = $this->pkg->getConfig();
-
-        $this->setApiKey($config->get("settings.api_key", ""));
-        $this->setAuthDomain($config->get("settings.auth_domain", ""));
-        $this->setDatabaseURL($config->get("settings.database_url", ""));
-        $this->setProjectId($config->get("settings.project_id", ''));
-        $this->setStorageBucket($config->get("settings.storage_bucket", ''));
-        $this->setMessagingSenderId($config->get("settings.messaging_sender_id", ''));
-        $this->setServerKey($config->get("settings.server_key", ''));
-        $this->setWelcomeMessageEnabled($config->get("settings.welcome_message_enabled", 0));
-        $this->setWelcomeMessageTitle($config->get("settings.welcome_message_title", ''));
-        $this->setWelcomeMessageBody($config->get("settings.welcome_message_body", ''));
-        $this->setWelcomeMessageClickAction($config->get("settings.welcome_message_click_action", 0));
-        $this->setWelcomeMessageIconFileId($config->get("settings.welcome_message_icon_file_id", 0));
+        $this->setApiKey($this->config->get("push_notifications.settings.api_key", ""));
+        $this->setAuthDomain($this->config->get("push_notifications.settings.auth_domain", ""));
+        $this->setDatabaseURL($this->config->get("push_notifications.settings.database_url", ""));
+        $this->setProjectId($this->config->get("push_notifications.settings.project_id", ''));
+        $this->setStorageBucket($this->config->get("push_notifications.settings.storage_bucket", ''));
+        $this->setMessagingSenderId($this->config->get("push_notifications.settings.messaging_sender_id", ''));
+        $this->setServerKey($this->config->get("push_notifications.settings.server_key", ''));
+        $this->setWelcomeMessageEnabled($this->config->get("push_notifications.settings.welcome_message_enabled", 0));
+        $this->setWelcomeMessageTitle($this->config->get("push_notifications.settings.welcome_message_title", ''));
+        $this->setWelcomeMessageBody($this->config->get("push_notifications.settings.welcome_message_body", ''));
+        $this->setWelcomeMessageClickAction($this->config->get("push_notifications.settings.welcome_message_click_action", 0));
+        $this->setWelcomeMessageIconFileId($this->config->get("push_notifications.settings.welcome_message_icon_file_id", 0));
     }
 }
