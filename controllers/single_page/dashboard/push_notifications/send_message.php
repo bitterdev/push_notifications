@@ -13,10 +13,12 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Logging\Channels;
 use Concrete\Core\Logging\LoggerAwareInterface;
 use Concrete\Core\Logging\LoggerAwareTrait;
+use Concrete\Core\Package\PackageService;
 use Concrete\Core\Page\Controller\DashboardSitePageController;
 use Concrete\Core\Page\Page;
 use Concrete\Core\Support\Facade\Url;
 use Concrete\Core\User\User;
+use Concrete\Package\PushNotifications\Controller;
 use Doctrine\DBAL\Exception;
 use Minishlink\WebPush\MessageSentReport;
 use Minishlink\WebPush\Subscription;
@@ -44,8 +46,14 @@ class SendMessage extends DashboardSitePageController implements LoggerAwareInte
         /** @var $formValidation Validation */
         /** @noinspection PhpUnhandledExceptionInspection */
         $formValidation = $this->app->make(Validation::class);
+        /** @var $packageService PackageService */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $packageService = $this->app->make(PackageService::class);
         $errorList = new ErrorList();
         $u = new User();
+        $pkgEntity = $packageService->getByHandle("push_notifications");
+        /** @var Controller $pkg */
+        $pkg = $pkgEntity->getController();
 
         $ui = $u->getUserInfoObject();
 
@@ -80,8 +88,8 @@ class SendMessage extends DashboardSitePageController implements LoggerAwareInte
                 try {
                     $webPush = new WebPush($auth);
 
-                    $iconUrl = null;
-                    $targetPage = null;
+                    $iconUrl = str_replace('/index.php', '', (string)Url::to("/")) . $pkg->getRelativePath() . "/images/default-icon.png";
+                    $targetPage = (string)Url::to(Page::getHomePageID(Page::getCurrentPage()));
 
                     if ($this->request->request->has("iconFile")) {
                         $iconFile = $this->request->request->get("iconFile");

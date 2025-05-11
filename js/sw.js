@@ -26,6 +26,7 @@ self.addEventListener('push', function (event) {
 
     event.waitUntil(
         self.registration.showNotification(data.title || '', options)
+            .catch(err => console.error('Error while displaying the notification:', err))
     );
 });
 
