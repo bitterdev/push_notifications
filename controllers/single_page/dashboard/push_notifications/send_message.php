@@ -123,8 +123,6 @@ class SendMessage extends DashboardSitePageController implements LoggerAwareInte
                             ]));
                         }
 
-                        $webPush->flush();
-
                         $results = $webPush->flush();
 
                         $successfulMessageCounter = 0;
