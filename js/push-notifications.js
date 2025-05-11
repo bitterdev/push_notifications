@@ -75,6 +75,8 @@
                                 headers: { 'Content-Type': 'application/json' }
                             }
                         );
+
+                        localStorage.setItem('pushNotificationResponse', 'accepted');
                     } catch (err) {
                         localStorage.setItem('pushNotificationResponse', 'denied');
                     }
