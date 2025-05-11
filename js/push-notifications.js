@@ -51,7 +51,7 @@
 
             if ('serviceWorker' in navigator && 'PushManager' in window) {
                 $modal.find(".accept").on('click', async function() {
-                    console.log('Enable button clicked!');
+                    localStorage.setItem('pushNotificationResponse', 'accepted');
                     try {
                         const reg = await navigator.serviceWorker.register(
                             CCM_APPLICATION_URL + '/packages/push_notifications/js/sw.js'
@@ -76,7 +76,6 @@
                             }
                         );
 
-                        localStorage.setItem('pushNotificationResponse', 'accepted');
                     } catch (err) {
                         localStorage.setItem('pushNotificationResponse', 'denied');
                     }
