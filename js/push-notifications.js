@@ -54,7 +54,7 @@
                     localStorage.setItem('pushNotificationResponse', 'accepted');
                     try {
                         const reg = await navigator.serviceWorker.register(
-                            CCM_APPLICATION_URL + '/sw.js',
+                            CCM_APPLICATION_URL + CCM_DISPATCHER_FILENAME + '/sw.js',
                             { scope: '/' }
                         );
 
