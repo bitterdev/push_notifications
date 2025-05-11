@@ -10,11 +10,15 @@ use Concrete\Core\File\File;
 use Concrete\Core\Form\Service\Validation;
 use Concrete\Core\Entity\File\File as FileEntity;
 use Concrete\Core\Http\Request;
+use Concrete\Core\Logging\Channels;
+use Concrete\Core\Logging\LoggerAwareInterface;
+use Concrete\Core\Logging\LoggerAwareTrait;
 use Concrete\Core\Page\Controller\DashboardSitePageController;
 use Concrete\Core\Page\Page;
 use Concrete\Core\Support\Facade\Url;
 use Concrete\Core\User\User;
 use Doctrine\DBAL\Exception;
+use Minishlink\WebPush\MessageSentReport;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\VAPID;
 use Minishlink\WebPush\WebPush;
@@ -22,8 +26,10 @@ use ErrorException;
 
 /** @noinspection PhpUnused */
 
-class SendMessage extends DashboardSitePageController
+class SendMessage extends DashboardSitePageController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function view()
     {
         /** @var Repository $config */
@@ -119,7 +125,34 @@ class SendMessage extends DashboardSitePageController
 
                         $webPush->flush();
 
-                        $this->set("success", t("All messages has been successfully sent."));
+                        $results = $webPush->flush();
+
+                        $successfulMessageCounter = 0;
+                        $errorMessageCounter = 0;
+
+                        foreach ($results as $result) {
+                            if ($result instanceof MessageSentReport) {
+                                if ($result->isSuccess()) {
+                                    $successfulMessageCounter++;
+                                    $this->logger->info(t("Message was sent successfully to endpoint %s.", $result->getEndpoint()));
+                                } else {
+                                    $errorMessageCounter++;
+                                    $this->logger->error(t("Error while sending message to endpoint %s (Reason: %s).", $result->getEndpoint(), $result->getReason()));
+                                }
+                            }
+                        }
+
+                        if ($successfulMessageCounter > 0) {
+                            $failedMessageNotice = "";
+
+                            if ($errorMessageCounter > 0) {
+                                $failedMessageNotice = " " . t2("%s message failed.", "%s failed.", $successfulMessageCounter) . " " . t("See more details in application logs.");
+                            }
+
+                            $this->set("success", t2("%s message has been successfully sent.", "%s messages has been successfully sent.", $successfulMessageCounter) . $failedMessageNotice);
+                        } else {
+                            $errorList->add(t("No messages were sent."));
+                        }
                     }
 
                 } catch (ErrorException|Exception $e) {
@@ -133,4 +166,8 @@ class SendMessage extends DashboardSitePageController
         }
     }
 
+    public function getLoggerChannel(): string
+    {
+        return Channels::CHANNEL_APPLICATION;
+    }
 }
