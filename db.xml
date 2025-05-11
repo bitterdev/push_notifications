@@ -4,12 +4,23 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.concrete5.org/doctrine-xml/0.5 http://concrete5.github.io/doctrine-xml/doctrine-xml-0.5.xsd">
 
-    <table name="PushNotificationsToken">
+    <table name="PushSubscriptions">
         <field name="id" type="integer" size="10">
             <unsigned/>
             <autoincrement/>
             <key/>
         </field>
-        <field name="token" type="string" size="4096" />
+        <field name="endpoint" type="text" size="4096"/>
+        <field name="p256dh" type="text" size="4096"/>
+        <field name="auth" type="text" size="4096"/>
+        <field name="createdAt" type="datetime">
+            <default value="CURRENT_TIMESTAMP"/>
+        </field>
+        <field name="siteId" type="integer" size="10">
+            <unsigned/>
+        </field>
+        <field name="uID" type="integer" size="10">
+            <unsigned/>
+        </field>
     </table>
 </schema>

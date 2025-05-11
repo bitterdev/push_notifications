@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @project:   Push Notifications
- *
- * @author     Fabian Bitter (fabian@bitter.de)
- * @copyright  (C) 2020 Fabian Bitter (www.bitter.de)
- * @version    X.X.X
- */
-
 defined('C5_EXECUTE') or die('Access denied');
 
 use Concrete\Core\Captcha\CaptchaInterface;
@@ -40,15 +32,18 @@ $user = new User();
 
 $app = Application::getFacadeApplication();
 /** @var Form $form */
+/** @noinspection PhpUnhandledExceptionInspection */
 $form = $app->make(Form::class);
 /** @var EditorInterface $editor */
+/** @noinspection PhpUnhandledExceptionInspection */
 $editor = $app->make(EditorInterface::class);
 /** @var CaptchaInterface $captcha */
+/** @noinspection PhpUnhandledExceptionInspection */
 $captcha = $app->make(CaptchaInterface::class);
 
 ?>
 
-<form action="<?php echo (string)Url::to("/ccm/system/dialogs/push_notifications/create_ticket/submit"); ?>"
+<form action="<?php echo Url::to("/ccm/system/dialogs/push_notifications/create_ticket/submit"); ?>"
       data-dialog-form="create-ticket"
       method="post"
       enctype="multipart/form-data">
@@ -81,11 +76,11 @@ $captcha = $app->make(CaptchaInterface::class);
     </div>
 
     <div class="dialog-buttons">
-        <button class="btn btn-default pull-left" data-dialog-action="cancel">
+        <button class="btn btn-default float-left" data-dialog-action="cancel">
             <?php echo t('Cancel') ?>
         </button>
 
-        <button type="button" data-dialog-action="submit" class="btn btn-primary pull-right">
+        <button type="button" data-dialog-action="submit" class="btn btn-primary float-right">
             <?php echo t('Create Ticket') ?>
         </button>
     </div>

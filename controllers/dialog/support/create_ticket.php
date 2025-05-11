@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @project:   Push Notifications
- *
- * @author     Fabian Bitter (fabian@bitter.de)
- * @copyright  (C) 2020 Fabian Bitter (www.bitter.de)
- * @version    X.X.X
- */
-
 namespace Concrete\Package\PushNotifications\Controller\Dialog\Support;
 
 use Concrete\Controller\Backend\UserInterface;

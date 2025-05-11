@@ -1,31 +1,13 @@
-**Watch the [video](https://www.youtube.com/watch?v=rovSQft3Sv0) to see the add-on in action!**
+# Push Notifications
 
-Googles Firebase Cloud Messaging service (FCM), previously known as Google Cloud Messaging Service (GCM), is a real marketing booster. You can reach your users by sending them push notifications to their desktop and even to their mobile devices.
+Elevate your website's user engagement with Push Notifications, the must-have extension for Concrete CMS v9. Designed to work effortlessly on all modern browsers, this extension removes the need for third-party services like Firebase, simplifying the process while delivering powerful results.
 
-With this add-on you can easily integrate the Google FCM service into your concrete5 site and even send messages to your users directly from your concrete5 dashboard.
+With Push Notifications, users can easily subscribe to receive notifications, allowing you to instantly communicate with your audience about new products, promotions, news, or any updates that matter to them. Once they opt-in, you gain direct access to their browser, enabling real-time push notifications that are sure to capture attention and drive action.
 
-After the installations your users will be requested to receive push notifications. If they agree you can send notifications to them at any time.  
+The best part? You control the process entirely from the intuitive dashboard. Whether you're a small business or a large enterprise, you can effortlessly manage your subscribers, segment your audience, and send personalized push notifications to specific groups. This flexibility allows for more targeted marketing campaigns that deliver better results, improving engagement rates and conversion levels.
 
-**Requirements**
+This extension also streamlines your workflow by eliminating the need for any complex setup or external services. Just install it, configure a few settings, and you’re ready to go. It's the ideal solution for websites that want to stay connected with their users and keep them engaged with minimal effort.
 
-This add-on requires the concrete5 version 8.0. The FCM service will work with all major browsers.
-
-**Instructions / Setup**
-
-1. Open [Firebase Console](https://console.firebase.google.com/) in your browser.
-2. Click on "Add a new project".
-3. Click on the gear icon on the left and then on the menu item "project settings".
-4. Click on "Add firebase to my web app project".
-5. Copy the values within the quotes from the config map to the add-on settings in the concrete5 dashboard page "Push Notifications".
-6. Congratulations you are done.
-
-*If you don't have a Google account you need to create a google account first in order to finish the first step.*
-
-**Costs**
-
-The FCM service is free to use. Besides the add-ons purchase price you don't have any additionally costs.  
-
-**GDPR disclaimer**
-
-This add-on shares user data with Google. To comply with GDPR please read the [Google Privacy](https://firebase.google.com/support/privacy/) and extend your privacy page.
-  
+Requirements:
+- Theme with at least Bootstrap 4
+- HTTPS enabled on your server

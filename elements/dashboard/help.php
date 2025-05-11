@@ -1,42 +1,18 @@
 <?php
 
-/**
- * @project:   Push Notifications
- *
- * @author     Fabian Bitter (fabian@bitter.de)
- * @copyright  (C) 2020 Fabian Bitter (www.bitter.de)
- * @version    X.X.X
- */
+defined('C5_EXECUTE') or die('Access Denied.');
 
-defined('C5_EXECUTE') or die('Access denied');
-
-use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Support\Facade\Url;
-use Concrete\Core\Utility\Service\Identifier;
-
-/** @var $packageHandle string */
-$app = Application::getFacadeApplication();
-
-/** @var Identifier $idHelper */
-$idHelper = $app->make(Identifier::class);
-$helpId = "ccm-help" . $idHelper->getString();
 
 ?>
 
-<div class="alert alert-info">
-    <?php echo t(
-        "If you need support please click %s.",
-        sprintf(
-            "<a href=\"javascript:void(0);\" id=\"%s\">%s</a>",
-            $helpId,
-            t("here")
-        )
-    ); ?>
-</div>
+<a  class="btn btn-secondary" href="javascript:void(0);" id="ccm-report-bug">
+    <?php echo t('Get Help') ?>
+</a>
 
 <script>
     (function ($) {
-        $("#<?php echo $helpId; ?>").click(function () {
+        $("#ccm-report-bug").click(function () {
             jQuery.fn.dialog.open({
                 href: "<?php echo (string)Url::to("/ccm/system/dialogs/push_notifications/create_ticket"); ?>",
                 modal: true,

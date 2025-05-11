@@ -1,116 +1,136 @@
 <?php
 
-/**
- * @project:   Push Notifications
- *
- * @author     Fabian Bitter (fabian@bitter.de)
- * @copyright  (C) 2020 Fabian Bitter
- * @version    X.X.X
- */
-
 namespace Concrete\Package\PushNotifications\Controller\SinglePage\Dashboard\PushNotifications;
 
+use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Database\Connection\Connection;
+use Concrete\Core\Entity\File\Version;
+use Concrete\Core\Error\ErrorList\ErrorList;
 use Concrete\Core\File\File;
-use Concrete\Core\Html\Service\Navigation;
-use Concrete\Core\Page\Controller\DashboardPageController;
+use Concrete\Core\Form\Service\Validation;
+use Concrete\Core\Entity\File\File as FileEntity;
 use Concrete\Core\Http\Request;
+use Concrete\Core\Page\Controller\DashboardSitePageController;
 use Concrete\Core\Page\Page;
-use Bitter\PushNotifications\Settings;
-use paragraph1\phpFCM\Client;
-use paragraph1\phpFCM\Message;
-use paragraph1\phpFCM\Recipient\Device;
-use paragraph1\phpFCM\Notification;
-use Exception;
+use Concrete\Core\Support\Facade\Url;
+use Concrete\Core\User\User;
+use Doctrine\DBAL\Exception;
+use Minishlink\WebPush\Subscription;
+use Minishlink\WebPush\VAPID;
+use Minishlink\WebPush\WebPush;
+use ErrorException;
 
 /** @noinspection PhpUnused */
 
-class SendMessage extends DashboardPageController
+class SendMessage extends DashboardSitePageController
 {
     public function view()
     {
-        /** @varSettings $settings */
-        $settings = $this->app->make(Settings::class);
+        /** @var Repository $config */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $config = $this->app->make(Repository::class);
+        /** @var $request Request */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $request = $this->app->make(Request::class);
+        /** @var $db Connection */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $db = $this->app->make(Connection::class);
+        /** @var $formValidation Validation */
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $formValidation = $this->app->make(Validation::class);
+        $errorList = new ErrorList();
+        $u = new User();
 
-        if ($this->token->validate("send_message")) {
-            /** @var $request Request */
-            $request = $this->app->make(Request::class);
-            /** @var $db Connection */
-            $db = $this->app->make(Connection::class);
-            /** @var $navHelper Navigation */
-            $navHelper = $this->app->make(Navigation::class);
+        $ui = $u->getUserInfoObject();
 
-            $deviceTokens = [];
+        if ($this->request->getMethod() === "POST") {
+            $formValidation->setData($this->request->request->all());
+            $formValidation->addRequiredToken("send_message");
+            $formValidation->addRequired("title", t("You need to enter a valid title."));
+            $formValidation->addRequired("body", t("You need to enter a valid body."));
 
-            /** @noinspection SqlDialectInspection */
-            /** @noinspection SqlNoDataSourceInspection */
-            foreach ($db->fetchAll("SELECT token FROM PushNotificationsToken") as $row) {
-                $deviceTokens[] = $row["token"];
-            }
+            if ($formValidation->test()) {
 
-            $clickActionUrl = "";
+                if (!$config->has("push_notifications.vapid_keys")) {
+                    try {
+                        $vapidKeys = VAPID::createVapidKeys();
 
-            $destPageId = $request->request->get("destPageId", 0);
-
-            if ($destPageId > 0) {
-                $destPage = Page::getByID($destPageId);
-
-                if (is_object($destPage)) {
-                    /** @noinspection PhpParamsInspection */
-                    $clickActionUrl = $navHelper->getCollectionURL($destPage);
+                        $config->save("push_notifications.vapid_keys", $vapidKeys);
+                    } catch (ErrorException) {
+                        $vapidKeys = [];
+                    }
+                } else {
+                    $vapidKeys = $config->get("push_notifications.vapid_keys");
                 }
-            }
 
-            try {
-                $client = new Client();
-                $client->setApiKey($settings->getServerKey());
-                $client->injectHttpClient(new \GuzzleHttp\Client());
+                $auth = [
+                    'VAPID' => [
+                        'subject' => 'mailto:' . $ui->getUserEmail(),
+                        'publicKey' => $vapidKeys['publicKey'],
+                        'privateKey' => $vapidKeys['privateKey'],
+                    ],
+                ];
 
-                /*
-                 * Split Array to chunks of max 100 items because
-                 * FCM accept only 100 recipients per message...
-                 */
-                foreach (array_chunk($deviceTokens, 100) as $deviceTokensChunk) {
-                    $message = new Message();
+                try {
+                    $webPush = new WebPush($auth);
 
-                    $notification = new Notification(
-                        $request->request->get("title", ""),
-                        $request->request->get("body", "")
-                    );
+                    $iconUrl = null;
+                    $targetPage = null;
 
-                    $iconFileId = intval($request->request->get("iconFileId", 0));
+                    if ($this->request->request->has("iconFile")) {
+                        $iconFile = $this->request->request->get("iconFile");
+                        $f = File::getByID($iconFile);
 
-                    if ($iconFileId > 0) {
-                        $iconFile = File::getByID($iconFileId);
+                        if ($f instanceof FileEntity) {
+                            $fv = $f->getApprovedVersion();
 
-                        if (is_object($iconFile)) {
-                            $approvedVersion = $iconFile->getApprovedVersion();
-
-                            if (is_object($approvedVersion)) {
-                                $notification->setIcon($approvedVersion->getURL());
+                            if ($fv instanceof Version) {
+                                $iconUrl = $fv->getURL();
                             }
                         }
                     }
 
-                    $notification->setClickAction($clickActionUrl);
-
-                    $message->setNotification($notification);
-
-                    foreach ($deviceTokensChunk as $deviceToken) {
-                        $message->addRecipient(new Device($deviceToken));
+                    if ($this->request->request->has("targetPage")) {
+                        $targetPage = (string)Url::to(Page::getByID($request->request->get("targetPage", 0)));
                     }
 
-                    $client->send($message);
+                    if (!$errorList->has()) {
+                        /** @noinspection SqlDialectInspection */
+                        /** @noinspection SqlNoDataSourceInspection */
+                        $subs = $db->fetchAllAssociative("SELECT * FROM PushSubscriptions WHERE siteId = ?", [
+                            $this->getSite()->getSiteID()
+                        ]);
+
+                        foreach ($subs as $sub) {
+                            $subscription = Subscription::create([
+                                'endpoint' => $sub['endpoint'],
+                                'publicKey' => $sub['p256dh'],
+                                'authToken' => $sub['auth'],
+                                'contentEncoding' => 'aesgcm'
+                            ]);
+
+                            $webPush->queueNotification($subscription, json_encode([
+                                'title' => $this->request->request->get("title"),
+                                'body' => $this->request->request->get("body"),
+                                'icon' => $iconUrl,
+                                'url' => $targetPage
+                            ]));
+                        }
+
+                        $webPush->flush();
+
+                        $this->set("success", t("All messages has been successfully sent."));
+                    }
+
+                } catch (ErrorException|Exception $e) {
+                    $errorList->add($e);
                 }
-
-                $this->set("success", t("The message was successfully sent."));
-
-            } catch (Exception $err) {
-                $this->error->add(t("The was an error while sending the message."));
+            } else {
+                $errorList = $formValidation->getError();
             }
-        }
 
-        $this->set("app", $this->app);
+            $this->error = $errorList;
+        }
     }
 
 }

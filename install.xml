@@ -4,7 +4,7 @@
         <page name="Push Notifications" path="/dashboard/push_notifications"
               filename="/dashboard/push_notifications.php" package="push_notifications"/>
         <page name="Settings" path="/dashboard/push_notifications/settings"
-              filename="/dashboard/push_notifications/settings/settings.php"
+              filename="/dashboard/push_notifications/settings.php"
               package="push_notifications"/>
         <page name="Send Message" path="/dashboard/push_notifications/send_message"
               filename="/dashboard/push_notifications/send_message.php"
