@@ -1,16 +1,21 @@
-<?php
+<?php /** @noinspection BadExpressionStatementJS */
 
 namespace Bitter\PushNotifications\Provider;
 
 use Bitter\PushNotifications\RouteList;
 use Concrete\Core\Application\Application;
+use Concrete\Core\File\Service\File;
 use Concrete\Core\Foundation\Service\Provider;
 use Concrete\Core\Html\Service\Html;
+use Concrete\Core\Http\Response;
+use Concrete\Core\Package\PackageService;
 use Concrete\Core\Page\Page;
 use Concrete\Core\Routing\Router;
 use Concrete\Core\Site\Service;
 use Concrete\Core\View\View;
+use Concrete\Package\PushNotifications\Controller;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class ServiceProvider extends Provider
 {
@@ -35,6 +40,7 @@ class ServiceProvider extends Provider
         $this->registerRoutes();
     }
 
+    /** @noinspection JSUnresolvedVariable */
     protected function registerEventHandlers()
     {
         $this->eventDispatcher->addListener('on_before_render', function () {
@@ -68,6 +74,26 @@ class ServiceProvider extends Provider
 
     protected function registerRoutes()
     {
+        /** @noinspection PhpDeprecationInspection */
+        $this->router->register("/sw.js", function() {
+            /** @var File $fileService */
+            $fileService = $this->app->make(File::class);
+            /** @var PackageService $packageService */
+            $packageService = $this->app->make(PackageService::class);
+            $pkgEntity = $packageService->getByHandle("push_notifications");
+            /** @var Controller $pkg */
+            $pkg = $pkgEntity->getController();
+
+            $swFile = $pkg->getPackagePath() . DIRECTORY_SEPARATOR . "js" . DIRECTORY_SEPARATOR . "sw.js";
+
+            $swFileContents = $fileService->getContents($swFile);
+
+            return new Response($swFileContents, ResponseAlias::HTTP_OK, [
+                'Content-Type' => 'text/javascript',
+                'Service-Worker-Allowed' => '/'
+            ]);
+        });
+
         $list = new RouteList();
         $list->loadRoutes($this->router);
     }
